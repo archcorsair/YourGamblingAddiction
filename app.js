@@ -49,11 +49,6 @@ const history = (user, message) => {
   const footer = ' Wins: 3 | Losses: 3';
   const response = richEmbed.addField('Win Percent: 50%', fieldValue).setFooter(footer);
   message.channel.send(response);
-  // message.channel.send(`<@!${user}>, here are your last few bets:
-  // this is a test of the formatting
-  // (<timestamp here>) Win 12343
-  // (<timestamp here>) Lose 12343
-  // (<timestamp here>) Win 12343`);
 };
 
 const ping = async (message) => {
@@ -163,56 +158,6 @@ client.on("message", async message => {
       console.log('Unknown command:', command);
       break;
   }
-
-  // const habits = (user) => {
-  //   const value = getUser(user);
-  //   console.log(value);
-  //   message.channel.send(`<@!${user}>, your gambling addiction has you at: $${value.total}`);
-  // };
-
-  // const history = (user) => {
-  //   message.channel.send(`<@!${user}>, here are your last 10 bets:
-  //   this is a test of the formatting
-  //   (<timestamp here>) Win 12343
-  //   (<timestamp here>) Lose 12343
-  //   (<timestamp here>) Win 12343`);
-  // };
-
-  // const ping = async () => {
-  //   console.log('ping!');
-  //   const m = await message.channel.send("Ping?");
-  //   m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
-  // };
-
-  // const swamp = () => {
-  //   const richEmbed = new Discord.RichEmbed({ description: 'What are you doing in my swamp?' });
-  //   message.channel.send(richEmbed.setImage('https://i.imgur.com/Av9gTzB.gif'));
-  // };
-  // if (command === 'habits') {
-  //   const user = message.author.id;
-  //   const value = getUser(user);
-  //   console.log(value);
-  //   message.channel.send(`<@!${user}>, your gambling addiction has you at: $${value.total}`);
-  // }
-
-  // if (command === 'history') {
-  //   const user = message.author.id;
-  //   message.channel.send(`<@!${user}>, here are your last 10 bets:
-  //   this is a test of the formatting
-  //   (<timestamp here>) Win 12343
-  //   (<timestamp here>) Lose 12343
-  //   (<timestamp here>) Win 12343`);
-  // }
-
-  // if (command === "ping") {
-  //   const m = await message.channel.send("Ping?");
-  //   m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
-  // }
-
-  // if (command === 'swamp') {
-  //   const richEmbed = new Discord.RichEmbed({ description: 'What are you doing in my swamp?' });
-  //   message.channel.send(richEmbed.setImage('https://i.imgur.com/Av9gTzB.gif'));
-  // }
 });
 
 client.login(config.token);
