@@ -1,0 +1,39 @@
+{
+  "users": [
+    {
+      "id": "151226694588432384",
+      "history": [
+        {
+          "timestamp": 1528959582152,
+          "amount": 1000,
+          "total": 100000
+        },
+        {
+          "timestamp": 1528959587902,
+          "amount": -500,
+          "total": 50000
+        },
+        {
+          "timestamp": 1528959624469,
+          "amount": 1000,
+          "total": 100000
+        },
+        {
+          "timestamp": 1528959629873,
+          "amount": -500,
+          "total": 50000
+        }
+      ],
+      "total": 0
+    },
+    {
+      "history": [],
+      "total": 0
+    },
+    {
+      "id": "114799848967897090",
+      "history": [],
+      "total": 0
+    }
+  ]
+}
