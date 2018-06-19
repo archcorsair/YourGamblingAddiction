@@ -1,69 +1,10 @@
-const path = require('path');
-const low = require('lowdb');
-const FileSync = require('lowdb/adapters/FileSync')
 const Discord = require("discord.js");
-
-const adapter = new FileSync('db.json')
-const db = low(adapter)
-
-db.defaults({ users: [] }).write();
-
-// DB Actions
-const createUser = (userId) => db.get('users').push({ id: userId, history: [], total: 0 }).write();
-const getUser = (userId) => {
-  const value = db.get('users').find({ id: userId }).value();
-  if (!value) {
-    createUser(userId);
-    return getUser(userId);
-  }
-  return value;
-}
-
-const addHistory = (userId, amount, total, timestamp) => {
-  if (!userId || !amount || !total || !timestamp) return;
-  getUser(userId);
-  db.get('users').find({ id: userId }).get('history').push({ timestamp, amount, total }).write();
-};
-
-const getHistory = (userId) => getUser(userId).history;
-
-// Command Definitions
-const habits = (user) => {
-  const value = getUser(user, message);
-  console.log(value);
-  message.channel.send(`<@!${user}>, your gambling addiction has you at: $${value.total}`);
-};
-
-const history = (user, message) => {
-  const userHistory = getHistory(user);
-  const history = [];
-  userHistory.forEach((item) => {
-    const date = new Date(item.timestamp)
-    dateString = date.toDateString();
-    timeString = date.toLocaleTimeString();
-    const winString = item.amount < 0 ? `(L: -$${Math.abs(item.amount)})` : `(W: +$${item.amount})`;
-    history.push(`<${dateString} ${timeString}> $${item.total} ${winString}`);
-  });
-  const richEmbed = new Discord.RichEmbed({ description: `Bet history for <@!${user}>` });
-  const fieldValue = history.join('\n');
-  const footer = ' Wins: 3 | Losses: 3';
-  const response = richEmbed.addField('Win Percent: 50%', fieldValue).setFooter(footer);
-  message.channel.send(response);
-};
-
-const ping = async (message) => {
-  console.log('ping!');
-  const m = await message.channel.send("Ping?");
-  m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
-};
-
-const swamp = () => {
-  const richEmbed = new Discord.RichEmbed({ description: 'What are you doing in my swamp?' });
-  message.channel.send(richEmbed.setImage('https://i.imgur.com/Av9gTzB.gif'));
-};
+const { history, swamp, habits, ping, writeHistory } = require ('./commands');
 
 const client = new Discord.Client();
 const config = require("./config.json");
+
+const messageRegex = /<@!(\d+)> -> .+?(LOST|WON).+?\$(.+?) .+ \$(.+?)\.$/;
 
 client.on("ready", () => {
   console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
@@ -82,8 +23,10 @@ client.on("guildDelete", guild => {
   client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
-
 client.on("message", async message => {
+
+  // MAIN BOT LOGIC ENTRY
+
   // if (message.author.bot && message.author.username === 'BoxBot') {
   //   const mention = message.mentions.users;
   //   let mentionedUser;
@@ -105,27 +48,37 @@ client.on("message", async message => {
   //   message.channel.send(`Looks like <@!${mentionedUser || 'someone'}> just gambled and ${gambleWin} $${gambled}!`);
   // }
 
-  // if (message.author.id = '151226694588432384') { // Daniel S only (debug)
-  //   console.log(message);
-  //   const mention = message.mentions.users;
-  //   let mentionedUser;
-  //   // There will only be one user
-  //   mention.forEach((key, value, map) => {
-  //     mentionedUser = value;
-  //   });
-  //   const text = message.content;
-  //   const isCoinFlip = text.includes('**WON**') || text.includes('**LOST**');
-  //   if (!isCoinFlip) return;
-  //   const gambleWin = text.includes('**WON**') ? 'won' : 'lost';
-  //   const split = text.split(' ');
-  //   const gambled = gambleWin === 'won'
-  //     ? parseInt(split[5].replace('$', '').replace(',', ''), 10)
-  //     : parseInt(split[4].replace('$', '').replace(',', ''), 10);
-  //   const amount = gambleWin ? gambled : -gambled;
-  //   addHistory(mentionedUser, amount, message.createdTimestamp);
-  //   message.channel.send(`Looks like <@!${mentionedUser || 'someone'}> just gambled and ${gambleWin} $${gambled}!`);
-  // }
+  // Daniel S only (debug)
+  if (message.author.id = '151226694588432384') {
+    const originalMessage = Object.assign({}, message);
+    console.log('original msg', originalMessage)
+    const messageContent = originalMessage.content;
+    const parsed = messageContent.match(messageRegex);
+    console.log('parsed', parsed);
+    const mention = message.mentions.users;
+    // console.log('mentioned:', mention);
+    let mentionedUser;
+    let username;
+    // Parse Input
+    const isCoinFlip = parsed[2] === ('WON') || parsed[2] === ('LOST');
+    // If not a coin flip, ignore
+    if (!isCoinFlip) return;
 
+    mentionedUser = parsed[1];
+
+    // There will only be one user
+    mention.forEach((key, value, map) => {
+      const data = map.get(value);
+      console.log('data', data);
+      username = data.username;
+    });
+    const gambleWin = parsed[2] === 'WON' ? 'won' : 'lost';
+    const gambled = parseFloat(parsed[3].replace('.', ''));
+    const total = parseFloat(parsed[4].replace(',', ''));
+    const change = gambleWin === 'WON' ? gambled : -gambled;
+    // writeHistory(mentionedUser, username, change, total, message.createdTimestamp);
+    message.channel.send(`Looks like <@!${mentionedUser || 'someone'}> just gambled and ${gambleWin} $${gambled}!`);
+  }
 
   if (message.author.bot) return;
   if (message.content.indexOf(config.prefix) !== 0) return;
@@ -133,8 +86,9 @@ client.on("message", async message => {
   const command = args.shift().toLowerCase();
 
   const currentUser = message.author.id;
+  const username = message.author.username;
 
-  // All supported commands
+  // Command Switchboard!
   switch (command) {
     case 'habits':
       habits(currentUser, message);
@@ -143,16 +97,16 @@ client.on("message", async message => {
       history(currentUser, message);
       break;
     case 'ping':
-      ping(message);
+      ping(message, client);
       break;
     case 'swamp':
-      swamp();
+      swamp(message);
       break;
     case 'fakewin':
-      addHistory(currentUser, 1000, 100000, message.createdTimestamp);
+      writeHistory(currentUser, username, 1000, 100000, message.createdTimestamp);
       break;
-    case 'fakehistory':
-      addHistory(currentUser, -500, 50000, message.createdTimestamp);
+    case 'fakeloss':
+      writeHistory(currentUser, username, -500, 50000, message.createdTimestamp);
       break;
     default:
       console.log('Unknown command:', command);
