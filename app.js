@@ -1,21 +1,16 @@
 const Discord = require("discord.js");
-const { history, swamp, habits, ping, writeHistory } = require ('./commands');
-
+const { history, swamp, ping, writeHistory, gains, losses } = require ('./commands');
 const client = new Discord.Client();
 const config = require("./config.json");
 
-const messageRegex = /<@!(\d+)> -> .+?(LOST|WON).+?\$(.+?) .+ \$(.+?)\.$/g;
+const messageRegex = /<@!(\d+)> -> .+?(LOST|WON).+?\$(.+?) .+ \$(.+?)\.$/;
+const normalizeAmount = amount => parseFloat(amount.replace(/\,/g, ''), 10);
 
-function normalizeAmount(amount) {
-  return parseFloat(amount.replace(/\,/g, ''), 10)
-}
-
-function processGamblingResult(message) {
+const processGamblingResult = (message) => {
   const parsed = messageRegex.exec(message.content)
-  console.log('parsed', parsed);
   if (!parsed) {
     // It's not a gambling message
-    console.log('[debug] Ignoring because not a gambling message')
+    console.log('[debug] Ignoring because not a gambling message', parsed, message);
     return;
   }
   let [, userId, status, amountBet, totalAmount] = parsed;
@@ -26,16 +21,17 @@ function processGamblingResult(message) {
   amountBet = normalizeAmount(amountBet);
   totalAmount = normalizeAmount(totalAmount);
   if (mentionedUser) {
-    writeHistory(userId, mentionedUser.username, amountBet, totalAmount, message.createdTimestamp);
+    const change = status === 'lost' ? -amountBet : amountBet
+    writeHistory(userId, mentionedUser.username, change, totalAmount, message.createdTimestamp);
   }
-  message.channel.send(`Looks like <@!${userId}> just gambled and ${status} $${amountBet}!`);
+  const icon = status === 'won' ? ':moneybag:' : ':small_red_triangle_down:';
+  message.channel.send(`Looks like <@!${userId}> just gambled and ${status} ${icon} $${amountBet}!`);
 }
 
 client.on("ready", () => {
   console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
-  // Example of changing the bot's playing game to something useful. `client.user` is what the
-  // docs refer to as the "ClientUser".
-  client.user.setActivity(`Serving ${client.guilds.size} servers`);
+  client.user.setUsername('Your Gambling Addiction'); // Reset Name
+  client.user.setActivity('with your savings');
 });
 
 client.on("guildCreate", guild => {
@@ -49,33 +45,32 @@ client.on("guildDelete", guild => {
 });
 
 client.on("message", origMessage => {
-  const message = Object.freeze(Object.assign({}, origMessage)); // spread does not work here, i tried already :(
+  const message = Object.freeze(Object.assign({}, origMessage));
   console.log(message);
   // Admins only (debug)
-  // if (message.author.id === '151226694588432384' || message.author.id === '203243677731127297') {
+  // if (config.admins.includes(message.author.id)) {
   //   processGamblingResult(message);
   // } else {
   //   console.log('[debug] Ignoring because from non-white-listed person', message.author.id);
   // }
+
+  // Listen to BoxBot
   if (message.author.id === '413728456942288896' && message.author.bot) {
     processGamblingResult(message);
   }
 
   if (message.author.bot) return;
-  if (message.content.indexOf(config.prefix) !== 0) return;
   const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
 
+  if (message.content.indexOf(config.prefix) !== 0) return;
   const currentUser = message.author.id;
   const username = message.author.username;
 
   // Command Switchboard!
   switch (command) {
-    case 'habits':
-      habits(currentUser, message);
-      break;
     case 'history':
-      history(currentUser, message);
+      history(message);
       break;
     case 'ping':
       ping(message, client);
@@ -83,11 +78,11 @@ client.on("message", origMessage => {
     case 'swamp':
       swamp(message);
       break;
-    case 'fakewin':
-      writeHistory(currentUser, username, 1000, 100000, message.createdTimestamp);
+    case 'gains':
+      gains(message);
       break;
-    case 'fakeloss':
-      writeHistory(currentUser, username, -500, 50000, message.createdTimestamp);
+    case 'losses':
+      losses(message);
       break;
     default:
       console.log('Unknown command:', command);
