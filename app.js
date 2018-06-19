@@ -4,7 +4,32 @@ const { history, swamp, habits, ping, writeHistory } = require ('./commands');
 const client = new Discord.Client();
 const config = require("./config.json");
 
-const messageRegex = /<@!(\d+)> -> .+?(LOST|WON).+?\$(.+?) .+ \$(.+?)\.$/;
+const messageRegex = /<@!(\d+)> -> .+?(LOST|WON).+?\$(.+?) .+ \$(.+?)\.$/g;
+
+function normalizeAmount(amount) {
+  return parseFloat(amount.replace(/\,/g, ''), 10)
+}
+
+function processGamblingResult(message) {
+  const parsed = messageRegex.exec(message.content)
+  console.log('parsed', parsed);
+  if (!parsed) {
+    // It's not a gambling message
+    console.log('[debug] Ignoring because not a gambling message')
+    return;
+  }
+  let [, userId, status, amountBet, totalAmount] = parsed;
+  const mentionedUsers = message.mentions.users;
+  const mentionedUser = mentionedUsers.get(userId);
+
+  status = status.toLowerCase();
+  amountBet = normalizeAmount(amountBet);
+  totalAmount = normalizeAmount(totalAmount);
+  if (mentionedUser) {
+    writeHistory(userId, mentionedUser.username, amountBet, totalAmount, message.createdTimestamp);
+  }
+  message.channel.send(`Looks like <@!${userId}> just gambled and ${status} $${amountBet}!`);
+}
 
 client.on("ready", () => {
   console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
@@ -23,61 +48,17 @@ client.on("guildDelete", guild => {
   client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
-client.on("message", async message => {
-
-  // MAIN BOT LOGIC ENTRY
-
-  // if (message.author.bot && message.author.username === 'BoxBot') {
-  //   const mention = message.mentions.users;
-  //   let mentionedUser;
-  //   // There will only be one user
-  //   mention.forEach((key, value, map) => {
-  //     mentionedUser = value;
-  //   });
-  //   const text = message.content;
-  //   const isCoinFlip = text.includes('**WON**') || text.includes('**LOST**');
-  //   if (!isCoinFlip) return;
-  //   const gambleWin = text.includes('**WON**') ? 'won' : 'lost';
-  //   const split = text.split(' ');
-  //   const gambled = gambleWin === 'won'
-  //     ? parseInt(split[5].replace('$', '').replace(',', ''), 10)
-  //     : parseInt(split[4].replace('$', '').replace(',', ''), 10);
-  //   const amount = gambleWin ? gambled : -gambled;
-  //   const total = parseInt(split[split.length - 1].replace('$', '').replace(',', '').slice(0, -1));
-  //   addHistory(mentionedUser, amount, total, message.createdTimestamp);
-  //   message.channel.send(`Looks like <@!${mentionedUser || 'someone'}> just gambled and ${gambleWin} $${gambled}!`);
+client.on("message", origMessage => {
+  const message = Object.freeze(Object.assign({}, origMessage)); // spread does not work here, i tried already :(
+  console.log(message);
+  // Admins only (debug)
+  // if (message.author.id === '151226694588432384' || message.author.id === '203243677731127297') {
+  //   processGamblingResult(message);
+  // } else {
+  //   console.log('[debug] Ignoring because from non-white-listed person', message.author.id);
   // }
-
-  // Daniel S only (debug)
-  if (message.author.id = '151226694588432384') {
-    const originalMessage = Object.assign({}, message);
-    console.log('original msg', originalMessage)
-    const messageContent = originalMessage.content;
-    const parsed = messageContent.match(messageRegex);
-    console.log('parsed', parsed);
-    const mention = message.mentions.users;
-    // console.log('mentioned:', mention);
-    let mentionedUser;
-    let username;
-    // Parse Input
-    const isCoinFlip = parsed[2] === ('WON') || parsed[2] === ('LOST');
-    // If not a coin flip, ignore
-    if (!isCoinFlip) return;
-
-    mentionedUser = parsed[1];
-
-    // There will only be one user
-    mention.forEach((key, value, map) => {
-      const data = map.get(value);
-      console.log('data', data);
-      username = data.username;
-    });
-    const gambleWin = parsed[2] === 'WON' ? 'won' : 'lost';
-    const gambled = parseFloat(parsed[3].replace('.', ''));
-    const total = parseFloat(parsed[4].replace(',', ''));
-    const change = gambleWin === 'WON' ? gambled : -gambled;
-    // writeHistory(mentionedUser, username, change, total, message.createdTimestamp);
-    message.channel.send(`Looks like <@!${mentionedUser || 'someone'}> just gambled and ${gambleWin} $${gambled}!`);
+  if (message.author.id === '413728456942288896' && message.author.bot) {
+    processGamblingResult(message);
   }
 
   if (message.author.bot) return;

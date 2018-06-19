@@ -3,6 +3,10 @@ const { getUser, addHistory, getHistory } = require('./dbActions');
 
 const history = (user, message) => {
   const userHistory = getHistory(user);
+  if (!userHistory.length) {
+    message.channel.send('Sorry this user has no history, try gambling first!');
+    return;
+  }
   const history = [];
   let wins = 0;
   let losses = 0;
