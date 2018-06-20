@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { history, swamp, ping, writeHistory, gains, losses } = require ('./commands');
+const { history, swamp, ping, writeHistory, gains, losses, earnings, help } = require ('./commands');
 const client = new Discord.Client();
 const config = require("./config.json");
 
@@ -83,6 +83,12 @@ client.on("message", origMessage => {
       break;
     case 'losses':
       losses(message);
+      break;
+    case 'earnings':
+      earnings(message);
+      break;
+    case 'help':
+      help(message);
       break;
     default:
       console.log('Unknown command:', command);

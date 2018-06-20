@@ -10,6 +10,7 @@ const history = (message) => {
   const history = [];
   let wins = 0;
   let losses = 0;
+  const totalEarnings = getEarnings(message)
   userHistory.forEach((item) => {
     if (item.change > 0) wins += 1;
     if (item.change < 0) losses += 1;
@@ -21,8 +22,8 @@ const history = (message) => {
   });
   const winPercent = Math.floor((wins / userHistory.length) * 100);
   const fieldValue = history.join('\n');
-  const footer = `Wins: ${wins} | Losses: ${losses}`;
-  const richEmbed = new Discord.RichEmbed({ description: `Bet history for <@!${user}>` });
+  const footer = `Wins: ${wins} | Losses: ${losses} | Lifetime Earnings: ${totalEarnings}`;
+  const richEmbed = new Discord.RichEmbed({ description: `Bet history for <@!${message.author.id}>` });
   const response = richEmbed.addField(`Win Percent: ${winPercent}%`, fieldValue).setFooter(footer);
   message.channel.send(response);
 };
@@ -53,9 +54,32 @@ const writeHistory = (userId, user, change, total, timestamp) => {
   addHistory(userId, user, change, total, timestamp);
 };
 
+const getEarnings = (message) => {
+  console.log('message', message);
+  const totalGains = getGains(message.author.id);
+  const totalLosses = getLosses(message.author.id);
+  return totalGains + totalLosses;
+};
+
+const earnings = (message) => {
+  message.channel.send(`<@!${message.author.id}>, your lifetime earnings: **$${getEarnings(message)}**`);
+}
+
+const help = (message) => {
+  const richEmbed = new Discord.RichEmbed();
+  const fieldValue = `**History** - Displays a breakdown of your most recent bets
+**Earnings** - Tells you your lifetime earnings
+**Gains** - Let's you know how much you've gained
+**Losses** - Lets's you know how much you've lost`;
+  const response = richEmbed.addField('List of commands', fieldValue);
+  message.channel.send(response);
+};
+
 exports.ping = ping;
 exports.swamp = swamp;
 exports.history = history;
 exports.writeHistory = writeHistory;
 exports.gains = gains;
 exports.losses = losses;
+exports.earnings = earnings;
+exports.help = help;
