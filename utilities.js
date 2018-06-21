@@ -27,7 +27,7 @@ const processGamblingResult = (message) => {
   const mentionedUser = mentionedUsers.get(userId);
 
   status = status.toLowerCase();
-  amountBet = normalizeAmount(amountBet);
+  amountBet = moneyString(normalizeAmount(amountBet));
   totalAmount = normalizeAmount(totalAmount);
   if (mentionedUser) {
     const change = status === 'lost' ? -amountBet : amountBet;
