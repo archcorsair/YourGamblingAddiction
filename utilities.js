@@ -14,10 +14,6 @@ const getEarnings = (message) => {
 const moneyString = dollars => `$${dollars.toLocaleString()}`;
 const getEarningsString = message => moneyString(getEarnings(message));
 
-const rebuildHistory = (message) => {
-
-};
-
 const processGamblingResult = (message) => {
   const parsed = messageRegex.exec(message.content);
   if (!parsed) {
@@ -43,5 +39,4 @@ const processGamblingResult = (message) => {
 
 exports.processGamblingResult = processGamblingResult;
 exports.getEarningsString = getEarningsString;
-exports.rebuildHistory = rebuildHistory;
 exports.moneyString = moneyString;
