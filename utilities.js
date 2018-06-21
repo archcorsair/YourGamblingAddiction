@@ -34,7 +34,7 @@ const processGamblingResult = (message) => {
     addHistory(userId, mentionedUser.username, change, totalAmount, message.createdTimestamp);
   }
   const icon = status === 'won' ? ':moneybag:' : ':small_red_triangle_down:';
-  message.channel.send(`Looks like <@!${userId}> just gambled and ${status} ${icon} $${amountBet}!`);
+  message.channel.send(`Looks like <@!${userId}> just gambled and ${status} ${icon} ${amountBet}!`);
 };
 
 exports.processGamblingResult = processGamblingResult;
