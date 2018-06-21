@@ -10,7 +10,7 @@ const history = (message) => {
   const history = [];
   let wins = 0;
   let losses = 0;
-  const totalEarnings = getEarnings(message)
+  const totalEarnings = getEarningsString(message);
   userHistory.forEach((item) => {
     if (item.change > 0) wins += 1;
     if (item.change < 0) losses += 1;
@@ -30,14 +30,14 @@ const history = (message) => {
 
 const gains = (message) => {
   const user = message.author.id;
-  const gains = getGains(user);
-  message.channel.send(`<@!${user}>, you have gained **$${gains}** from gambling`);
+  const gains = moneyString(getGains(user));
+  message.channel.send(`<@!${user}>, you have gained **${gains}** from gambling`);
 };
 
 const losses = (message) => {
   const user = message.author.id;
-  const losses = getLosses(user);
-  message.channel.send(`<@!${user}>, you have lost **$${losses}** from gambling`);
+  const losses = moneyString(getLosses(user));
+  message.channel.send(`<@!${user}>, you have lost **${losses}** from gambling`);
 };
 
 const swamp = (message) => {
@@ -61,8 +61,16 @@ const getEarnings = (message) => {
   return totalGains - totalLosses;
 };
 
+const getEarningsString = (message) => {
+  return moneyString(getEarnings(message));
+};
+
+const moneyString = (dollars) => {
+  return `$${dollars.toLocaleString()}`;
+}
+
 const earnings = (message) => {
-  message.channel.send(`<@!${message.author.id}>, your lifetime earnings: **$${getEarnings(message)}**`);
+  message.channel.send(`<@!${message.author.id}>, your lifetime earnings: **${getEarningsString(message)}**`);
 }
 
 const help = (message) => {
