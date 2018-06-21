@@ -1,21 +1,8 @@
 const Discord = require('discord.js');
 const {
-  addHistory, getHistory, getGains, getLosses,
+  getHistory, getGains, getLosses,
 } = require('./dbActions');
-
-// Utilities
-const getEarnings = (message) => {
-  // console.log('message', message);
-  const totalGains = getGains(message.author.id);
-  const totalLosses = getLosses(message.author.id);
-  return totalGains - totalLosses;
-};
-const moneyString = dollars => `$${dollars.toLocaleString()}`;
-const getEarningsString = message => moneyString(getEarnings(message));
-
-const rebuildHistory = (message) => {
-
-};
+const { getEarningsString, moneyString } = require('./utilities');
 
 // Commands
 const history = (message) => {
@@ -67,10 +54,6 @@ const ping = async (message, client) => {
   m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
 };
 
-const writeHistory = (userId, user, change, total, timestamp) => {
-  addHistory(userId, user, change, total, timestamp);
-};
-
 const earnings = (message) => {
   message.channel.send(`<@!${message.author.id}>, your lifetime earnings: **${getEarningsString(message)}**`);
 };
@@ -88,7 +71,6 @@ const help = (message) => {
 exports.ping = ping;
 exports.swamp = swamp;
 exports.history = history;
-exports.writeHistory = writeHistory;
 exports.gains = gains;
 exports.losses = losses;
 exports.earnings = earnings;
