@@ -58,7 +58,7 @@ const getEarnings = (message) => {
   console.log('message', message);
   const totalGains = getGains(message.author.id);
   const totalLosses = getLosses(message.author.id);
-  return totalGains + totalLosses;
+  return totalGains - totalLosses;
 };
 
 const earnings = (message) => {
