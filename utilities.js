@@ -31,7 +31,7 @@ const processGamblingResult = (message) => {
   totalAmount = normalizeAmount(totalAmount);
   if (mentionedUser) {
     const change = status === 'lost' ? -amountBet : amountBet;
-    addHistory(userId, mentionedUser.username, change, totalAmount, message.createdTimestamp);
+    addHistory(userId, change, totalAmount, message.createdTimestamp);
   }
   const amountStr = moneyString(amountBet);
   const icon = status === 'won' ? ':moneybag:' : ':small_red_triangle_down:';
