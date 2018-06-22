@@ -27,14 +27,15 @@ const processGamblingResult = (message) => {
   const mentionedUser = mentionedUsers.get(userId);
 
   status = status.toLowerCase();
-  amountBet = moneyString(normalizeAmount(amountBet));
+  amountBet = normalizeAmount(amountBet);
   totalAmount = normalizeAmount(totalAmount);
   if (mentionedUser) {
     const change = status === 'lost' ? -amountBet : amountBet;
     addHistory(userId, mentionedUser.username, change, totalAmount, message.createdTimestamp);
   }
+  const amountStr = moneyString(amountBet);
   const icon = status === 'won' ? ':moneybag:' : ':small_red_triangle_down:';
-  message.channel.send(`Looks like <@!${userId}> just gambled and ${status} ${icon} ${amountBet}!`);
+  message.channel.send(`Looks like <@!${userId}> just gambled and ${status} ${icon} ${amountStr}!`);
 };
 
 exports.processGamblingResult = processGamblingResult;
