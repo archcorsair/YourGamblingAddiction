@@ -21,8 +21,11 @@ const history = (message) => {
     const date = new Date(item.timestamp);
     const dateString = date.toDateString();
     const timeString = date.toLocaleTimeString();
-    const winString = item.change < 0 ? `(L: -$${Math.abs(item.change)})` : `(W: +$${item.change})`;
-    dispHistory.push(`<${dateString} ${timeString}> $${item.total} ${winString}`);
+    const totalStr = moneyString(item.total);
+    const prefix = item.change < 0 ? 'L: -' : 'W: +';
+    const amountStr = moneyString(Math.abs(item.change));
+    const winString = `(${prefix}${amountStr})`;
+    dispHistory.push(`<${dateString} ${timeString}> ${totalStr} ${winString}`);
   });
   const winPercent = Math.floor((wins / userHistory.length) * 100);
   const fieldValue = dispHistory.join('\n');
