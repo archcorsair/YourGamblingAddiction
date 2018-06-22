@@ -8,9 +8,8 @@ const HISTORY_ENTRY_LIMIT = 10;
 
 // Commands
 const history = (message) => {
-  const allUserHistory = getSortedHistory(message.author.id);
-  const moreHistory = allUserHistory.length > HISTORY_ENTRY_LIMIT;
-  const userHistory = allUserHistory.slice(-HISTORY_ENTRY_LIMIT);
+  const userHistory = getSortedHistory(message.author.id);
+  const moreHistory = userHistory.length > HISTORY_ENTRY_LIMIT;
   if (!userHistory.length) {
     message.channel.send('Sorry this user has no history, try gambling first!');
     return;
@@ -19,27 +18,30 @@ const history = (message) => {
   let wins = 0;
   let losses = 0;
   const totalEarnings = getEarningsString(message);
-  userHistory.forEach((item) => {
+  for (let i = userHistory.length - 1; i >= 0; i -= 1) {
+    const item = userHistory[i];
     if (item.change > 0) wins += 1;
     if (item.change < 0) losses += 1;
-    const date = new Date(item.timestamp);
-    const dateString = date.toDateString();
-    const timeString = date.toLocaleTimeString();
-    const totalStr = moneyString(item.total);
-    const prefix = item.change < 0 ? 'L: -' : 'W: +';
-    const amountStr = moneyString(Math.abs(item.change));
-    const winString = `(${prefix}${amountStr})`;
-    dispHistory.push(`<${dateString} ${timeString}> ${totalStr} ${winString}`);
-  });
+    if (dispHistory.length < HISTORY_ENTRY_LIMIT) {
+      const date = new Date(item.timestamp);
+      const dateString = date.toDateString();
+      const timeString = date.toLocaleTimeString();
+      const totalStr = moneyString(item.total);
+      const prefix = item.change < 0 ? 'L: -' : 'W: +';
+      const amountStr = moneyString(Math.abs(item.change));
+      const winString = `(${prefix}${amountStr})`;
+      dispHistory.push(`<${dateString} ${timeString}> ${totalStr} ${winString}`);
+    }
+  }
   const winPercent = Math.floor((wins / userHistory.length) * 100);
-  const fieldValue = dispHistory.join('\n');
+  const fieldValue = dispHistory.reverse().join('\n');
   const footerEntries = [
     `Wins: ${wins}`,
     `Losses: ${losses}`,
     `Lifetime Earnings: ${totalEarnings}`,
   ];
   if (moreHistory) {
-    const hiddenEntryCount = allUserHistory.length - HISTORY_ENTRY_LIMIT;
+    const hiddenEntryCount = userHistory.length - HISTORY_ENTRY_LIMIT;
     footerEntries.push(`${hiddenEntryCount} entries not shown`);
   }
   const footer = footerEntries.join(' | ');
@@ -109,11 +111,11 @@ const adminAddHistory = (message, args) => {
   message.channel.send('Added!');
 };
 
+exports.adminAddHistory = adminAddHistory;
+exports.earnings = earnings;
+exports.gains = gains;
+exports.help = help;
+exports.history = history;
+exports.losses = losses;
 exports.ping = ping;
 exports.swamp = swamp;
-exports.history = history;
-exports.gains = gains;
-exports.losses = losses;
-exports.earnings = earnings;
-exports.help = help;
-exports.adminAddHistory = adminAddHistory;
