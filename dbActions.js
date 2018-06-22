@@ -5,15 +5,15 @@ const adapter = new FileSync('db.json');
 const db = low(adapter);
 db.defaults({ users: [] }).write();
 
-const createUser = (userId, user) => db.get('users').push({
-  id: userId, user, gains: 0, losses: 0, history: [],
+const createUser = userId => db.get('users').push({
+  id: userId, gains: 0, losses: 0, history: [],
 }).write();
 
-const getUser = (userId, user) => {
+const getUser = (userId) => {
   const value = db.get('users').find({ id: userId }).value();
   if (!value) {
-    createUser(userId, user);
-    return getUser(userId, user);
+    createUser(userId);
+    return getUser(userId);
   }
   return value;
 };
@@ -25,9 +25,9 @@ const updateWinnings = (userId, change) => {
   if (change > 0) user.assign({ gains: userValues.gains + change }).write();
 };
 
-const addHistory = (userId, user, change, total, timestamp) => {
+const addHistory = (userId, change, total, timestamp) => {
   if (!userId || !change || !total || !timestamp) return;
-  getUser(userId, user);
+  getUser(userId);
   db.get('users').find({ id: userId }).get('history').push({ timestamp, change, total })
     .write();
   updateWinnings(userId, change);
