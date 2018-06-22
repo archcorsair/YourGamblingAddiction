@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const {
-  getHistory, getGains, getLosses,
+  getHistory, getGains, getLosses, addHistory,
 } = require('./dbActions');
 const { getEarningsString, moneyString } = require('./utilities');
 
@@ -71,6 +71,35 @@ const help = (message) => {
   message.channel.send(response);
 };
 
+const adminAddHistory = (message, args) => {
+  if (args.length !== 4) {
+    message.channel.send(`Speak to me in a language I understand <@!${message.author.id}>!`);
+    return;
+  }
+  const [userId, amountChange, totalAmount, timestamp] = args;
+  if (!/\d{18}/.test(userId)) {
+    message.channel.send(`Couldn't parse '${userId}' into a userId...`);
+    return;
+  }
+  const changed = Number.parseFloat(amountChange);
+  if (Number.isNaN(changed)) {
+    message.channel.send(`Couldn't parse the change '${amountChange}' into a float...`);
+    return;
+  }
+  const total = Number.parseFloat(totalAmount);
+  if (Number.isNaN(total)) {
+    message.channel.send(`Couldn't parse the total '${totalAmount}' into a float...`);
+    return;
+  }
+  const ts = Number.parseInt(timestamp, 10);
+  if (Number.isNaN(ts) || ts < 1514764800000) { // 2018-01-01 00:00:00 UTC
+    message.channel.send(`Couldn't parse the timestamp '${timestamp}' into an Date...`);
+    return;
+  }
+  addHistory(userId, amountChange, totalAmount, ts);
+  message.channel.send('Added!');
+};
+
 exports.ping = ping;
 exports.swamp = swamp;
 exports.history = history;
@@ -78,3 +107,4 @@ exports.gains = gains;
 exports.losses = losses;
 exports.earnings = earnings;
 exports.help = help;
+exports.adminAddHistory = adminAddHistory;
