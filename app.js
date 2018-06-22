@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const {
-  history, swamp, ping, gains, losses, earnings, help,
+  history, swamp, ping, gains, losses, earnings, help, adminAddHistory,
 } = require('./commands');
 const { processGamblingResult } = require('./utilities');
 
@@ -68,6 +68,11 @@ client.on('message', (origMessage) => {
       break;
     case 'help':
       help(message);
+      break;
+    case 'add':
+      if (config.admins.includes(message.author.id)) {
+        adminAddHistory(message, args);
+      }
       break;
     default:
       console.log('Unknown command:', command);
