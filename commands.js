@@ -1,12 +1,12 @@
 const Discord = require('discord.js');
 const {
-  getHistory, getGains, getLosses, addHistory,
+  getGains, getLosses, addHistory, getSortedHistory,
 } = require('./dbActions');
 const { getEarningsString, moneyString } = require('./utilities');
 
 // Commands
 const history = (message) => {
-  const userHistory = getHistory(message.author.id);
+  const userHistory = getSortedHistory(message.author.id);
   if (!userHistory.length) {
     message.channel.send('Sorry this user has no history, try gambling first!');
     return;
@@ -76,7 +76,7 @@ const adminAddHistory = (message, args) => {
     message.channel.send(`Speak to me in a language I understand <@!${message.author.id}>!`);
     return;
   }
-  const [userId, amountChange, totalAmount, timestamp] = args;
+  const [userId, amountChange, totalAmount, snowflake] = args;
   if (!/\d{18}/.test(userId)) {
     message.channel.send(`Couldn't parse '${userId}' into a userId...`);
     return;
@@ -91,12 +91,8 @@ const adminAddHistory = (message, args) => {
     message.channel.send(`Couldn't parse the total '${totalAmount}' into a float...`);
     return;
   }
-  const ts = Number.parseInt(timestamp, 10);
-  if (Number.isNaN(ts) || ts < 1514764800000) { // 2018-01-01 00:00:00 UTC
-    message.channel.send(`Couldn't parse the timestamp '${timestamp}' into an Date...`);
-    return;
-  }
-  addHistory(userId, amountChange, totalAmount, ts);
+  const { timestamp } = Discord.Snowflake.deconstruct(snowflake);
+  addHistory(userId, changed, total, timestamp);
   message.channel.send('Added!');
 };
 
