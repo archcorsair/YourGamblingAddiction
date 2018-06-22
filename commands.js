@@ -1,12 +1,12 @@
 const Discord = require('discord.js');
 const {
-  getHistory, getGains, getLosses, addHistory,
+  getGains, getLosses, addHistory, getSortedHistory,
 } = require('./dbActions');
 const { getEarningsString, moneyString } = require('./utilities');
 
 // Commands
 const history = (message) => {
-  const userHistory = getHistory(message.author.id);
+  const userHistory = getSortedHistory(message.author.id);
   if (!userHistory.length) {
     message.channel.send('Sorry this user has no history, try gambling first!');
     return;

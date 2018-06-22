@@ -27,6 +27,19 @@ const addHistory = (userId, change, total, timestamp) => {
 
 const getHistory = userId => getUser(userId).history;
 
+const getSortedHistory = (userId) => {
+  const history = getHistory(userId);
+  if (history.length === 0) {
+    return history;
+  }
+  const historyMap = new Map();
+  history.forEach(i => historyMap.set(i.timestamp, i));
+  const sortedHistory = [];
+  Array.from(historyMap.keys()).sort().forEach(id =>
+    sortedHistory.push(historyMap.get(id)));
+  return sortedHistory;
+};
+
 const getLosses = userId =>
   getHistory(userId).reduce((total, i) => {
     if (i.change < 0) {
@@ -46,5 +59,6 @@ const getGains = userId =>
 exports.getUser = getUser;
 exports.addHistory = addHistory;
 exports.getHistory = getHistory;
+exports.getSortedHistory = getSortedHistory;
 exports.getLosses = getLosses;
 exports.getGains = getGains;
