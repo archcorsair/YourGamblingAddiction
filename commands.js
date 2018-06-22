@@ -4,9 +4,13 @@ const {
 } = require('./dbActions');
 const { getEarningsString, moneyString } = require('./utilities');
 
+const HISTORY_ENTRY_LIMIT = 10;
+
 // Commands
 const history = (message) => {
-  const userHistory = getSortedHistory(message.author.id);
+  const allUserHistory = getSortedHistory(message.author.id);
+  const moreHistory = allUserHistory.length > HISTORY_ENTRY_LIMIT;
+  const userHistory = allUserHistory.slice(-HISTORY_ENTRY_LIMIT);
   if (!userHistory.length) {
     message.channel.send('Sorry this user has no history, try gambling first!');
     return;
@@ -29,7 +33,16 @@ const history = (message) => {
   });
   const winPercent = Math.floor((wins / userHistory.length) * 100);
   const fieldValue = dispHistory.join('\n');
-  const footer = `Wins: ${wins} | Losses: ${losses} | Lifetime Earnings: ${totalEarnings}`;
+  const footerEntries = [
+    `Wins: ${wins}`,
+    `Losses: ${losses}`,
+    `Lifetime Earnings: ${totalEarnings}`,
+  ];
+  if (moreHistory) {
+    const hiddenEntryCount = allUserHistory.length - HISTORY_ENTRY_LIMIT;
+    footerEntries.push(`${hiddenEntryCount} entries not shown`);
+  }
+  const footer = footerEntries.join(' | ');
   const richEmbed = new Discord.RichEmbed({ description: `Bet history for <@!${message.author.id}>` });
   const response = richEmbed.addField(`Win Percent: ${winPercent}%`, fieldValue).setFooter(footer);
   message.channel.send(response);
