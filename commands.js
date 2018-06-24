@@ -42,7 +42,7 @@ const history = (message) => {
   ];
   if (moreHistory) {
     const hiddenEntryCount = userHistory.length - HISTORY_ENTRY_LIMIT;
-    footerEntries.push(`${hiddenEntryCount} entries not shown`);
+    footerEntries.push(`${hiddenEntryCount} bet(s) not shown`);
   }
   const footer = footerEntries.join(' | ');
   const richEmbed = new Discord.RichEmbed({ description: `Bet history for <@!${message.author.id}>` });
