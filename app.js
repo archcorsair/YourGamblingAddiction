@@ -48,6 +48,7 @@ client.on('message', (origMessage) => {
 
   // Command Switchboard!
   switch (command) {
+    case 'hist':
     case 'history':
       history(message);
       break;
@@ -57,15 +58,24 @@ client.on('message', (origMessage) => {
     case 'swamp':
       swamp(message);
       break;
+    case 'won':
+    case 'win':
+    case 'wins':
+    case 'winnings':
     case 'gains':
       gains(message);
       break;
+    case 'lost':
+    case 'loss':
     case 'losses':
       losses(message);
       break;
+    case 'earn':
+    case 'earned':
     case 'earnings':
       earnings(message);
       break;
+    case 'h':
     case 'help':
       help(message);
       break;
