@@ -82,7 +82,7 @@ const help = (message) => {
 **Earnings** - Tells you your lifetime earnings
 **Gains** - Let's you know how much you've gained
 **Losses** - Lets's you know how much you've lost
-**Ping** - Displays your ping to the bot and the bot's ping to the API`;
+**Ping** - Displays the delay between messages and bot responses, as well as the bot's ping to the API`;
   const response = richEmbed.addField('List of commands', fieldValue);
   message.channel.send(response);
 };
