@@ -61,7 +61,7 @@ client.on('message', (origMessage) => {
     case 'won':
     case 'win':
     case 'wins':
-    case 'winnings:
+    case 'winnings':
     case 'gains':
       gains(message);
       break;
